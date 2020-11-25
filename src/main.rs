@@ -25,20 +25,22 @@ fn get_chunked_string(source: &Vec<Vec<String>>, row_size: u32) -> Vec<String> {
   }
   result
 }
+fn create_option() -> getopts::Options {
+  let mut opts = Options::new();
+  opts.optflag("h", "help", "print this help menu");
+  opts.optflag("a", "annual", "print annual calendar");
+  opts
+}
 
 fn print_usage(program: &str, opts: Options) {
   let brief = format!("Usage: {} FILE [options]", program);
   print!("{}", opts.usage(&brief));
 }
 fn main() {
+  let opts = create_option();
+
   let args: Vec<String> = env::args().collect();
   let program = args[0].clone();
-
-  let mut opts = Options::new();
-  // opts.optopt("o", "output", "set output file name", "NAME");
-  opts.optflag("h", "help", "print this help menu");
-  opts.optflag("a", "annual", "print annual calendar");
-
   let matches = match opts.parse(&args[1..]) {
     Ok(m) => m,
     Err(f) => {
