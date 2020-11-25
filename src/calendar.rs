@@ -14,13 +14,19 @@ fn red(s: String) -> String {
   format!("\x1b[31m{}\x1b[0m", s)
 }
 
-pub fn get_calendar(first_date: Date<Local>, today: Date<Local>) -> MonthlyCalendar {
+pub fn get_calendar(
+  first_date: Date<Local>,
+  today: Date<Local>,
+  uses_monday_as_first_day: bool,
+) -> MonthlyCalendar {
   let (year, month) = (first_date.year(), first_date.month());
   let mut res: MonthlyCalendar = Vec::new();
   let header = format!("{:-^21}", format!(" {}-{} ", year, month));
   res.push(header);
 
-  let mut i = first_date.weekday().num_days_from_sunday();
+  let mut i = (first_date.weekday().num_days_from_sunday()
+    + if uses_monday_as_first_day { 6 } else { 0 })
+    % 7;
   let mut line = "   ".repeat(i as usize);
 
   for date in first_date.day()..last_date(year, month).day() + 1 {
@@ -38,14 +44,18 @@ pub fn get_calendar(first_date: Date<Local>, today: Date<Local>) -> MonthlyCalen
       i = 0;
     }
   }
-  line += &"   ".repeat(6 - last_date(year, month).weekday().num_days_from_sunday() as usize);
+  line += &"   ".repeat(7 - i as usize);
   if line.len() > 0 {
     res.push(line)
   }
   res
 }
-pub fn create_annual_calendar(year: i32, today: Date<Local>) -> AnnualCalendar {
+pub fn create_annual_calendar(
+  year: i32,
+  today: Date<Local>,
+  uses_monday_as_first_day: bool,
+) -> AnnualCalendar {
   (1..13)
-    .map(|month| get_calendar(Local.ymd(year, month, 1), today))
+    .map(|month| get_calendar(Local.ymd(year, month, 1), today, uses_monday_as_first_day))
     .collect()
 }

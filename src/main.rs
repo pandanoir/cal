@@ -1,6 +1,5 @@
 mod calendar;
-use crate::calendar::create_annual_calendar;
-use crate::calendar::get_calendar;
+use crate::calendar::{create_annual_calendar, get_calendar};
 use chrono::{Datelike, Local, TimeZone};
 use getopts::Options;
 use std::env;
@@ -29,6 +28,11 @@ fn create_option() -> getopts::Options {
   let mut opts = Options::new();
   opts.optflag("h", "help", "print this help menu");
   opts.optflag("a", "annual", "print annual calendar");
+  opts.optflag(
+    "",
+    "monday",
+    "print calendar with first day of the week as monday",
+  );
   opts
 }
 
@@ -48,11 +52,12 @@ fn main() {
     }
   };
 
-  if matches.opt_present("h") {
+  if matches.opt_present("help") {
     print_usage(&program, opts);
     return;
   }
 
+  let uses_monday_as_first_day = matches.opt_present("monday");
   let today = Local::today();
   let row_size = 5;
 
@@ -66,12 +71,12 @@ fn main() {
   };
 
   if matches.opt_present("annual") {
-    let calendar = create_annual_calendar(year, today);
+    let calendar = create_annual_calendar(year, today, uses_monday_as_first_day);
     for elem in get_chunked_string(&calendar, row_size) {
       println!("{}", elem);
     }
   } else {
-    let calendar = get_calendar(Local.ymd(year, month, 1), today);
+    let calendar = get_calendar(Local.ymd(year, month, 1), today, uses_monday_as_first_day);
     for elem in calendar {
       println!("{}", elem);
     }
